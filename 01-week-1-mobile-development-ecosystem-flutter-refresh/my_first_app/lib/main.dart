@@ -14,10 +14,14 @@ class MyApp extends StatelessWidget {
                 appBar: AppBar(title: const Text('Profil Mahasiswa')),
                 body: const Center(
                     child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        Icon(Icons.school, size: 72),
+                        Icon(Icons.school, size: 100, color: Color.fromARGB(255, 0, 60, 108)),
                         SizedBox(height:16),
                         Text('Raditya Zandra Fadhillah', style: TextStyle(fontSize: 24)),
-                        Text('Pemrogaman Mobile - Minggu 1'),
+                        Text('NIM: 244107020144', style: TextStyle(fontSize: 17)),
+                        SizedBox(height:10),
+                        Text('Pemrogaman Mobile - Minggu 1', style: TextStyle(fontSize: 20)),
+                        SizedBox(height:16),
+                        Text('Politeknik Negeri Malang', style: TextStyle(fontSize: 20)),
                     ]),
                 ),
             ),
