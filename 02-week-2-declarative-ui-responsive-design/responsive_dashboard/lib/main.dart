@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+const kWideBreakpoint = 700;
+
 void main() => runApp(const AcademicOverview());
 
 class AcademicOverview extends StatefulWidget {
@@ -72,7 +74,7 @@ class DashboardPage extends StatelessWidget {
 
       body: LayoutBuilder(
         builder: (context, constraints) {
-          final columns = constraints.maxWidth >= 700 ? 2 : 1;
+          final columns = constraints.maxWidth >= kWideBreakpoint ? 2 : 1;
 
           return Column(
             children: [
@@ -111,10 +113,10 @@ class DashboardPage extends StatelessWidget {
                   mainAxisSpacing: 16,
                   childAspectRatio: 2.6,
                   children: const [
-                    DashboardCard(title: 'Assignments', value: '8',),
-                    DashboardCard(title: 'Attendance', value: '92%',),
-                    DashboardCard(title: 'Portfolio', value: 'Ready',),
-                    DashboardCard(title: 'GPA', value: '3.66',),
+                    InfoCard(title: 'Assignments', value: '8',),
+                    InfoCard(title: 'Attendance', value: '92%',),
+                    InfoCard(title: 'Portfolio', value: 'Ready',),
+                    InfoCard(title: 'GPA', value: '3.66',),
                   ],
                 ),
               ),
@@ -126,8 +128,8 @@ class DashboardPage extends StatelessWidget {
   }
 }
 
-class DashboardCard extends StatelessWidget {
-  const DashboardCard({required this.title, required this.value, super.key});
+class InfoCard extends StatelessWidget {
+  const InfoCard({required this.title, required this.value, super.key});
   final String title;
   final String value;
 
@@ -143,7 +145,10 @@ class DashboardCard extends StatelessWidget {
             children: [
               Expanded(
                 child: ExcludeSemantics(
-                  child: Text(title),
+                  child: Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                  ),
                 ),
               ),
               ExcludeSemantics(
