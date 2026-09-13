@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 /// Model untuk satu data statistik.
 class StatItem {
@@ -108,6 +109,25 @@ class StatsPage extends ConsumerWidget {
             );
           },
         ),
+      ),
+
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: 1,
+        onDestinationSelected: (index) {
+          if (index == 0) {
+            context.go('/');
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.checklist),
+            label: 'ToDo',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart),
+            label: 'Statistik',
+          ),
+        ],
       ),
     );
   }

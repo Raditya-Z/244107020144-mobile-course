@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../widgets/todo_tile.dart';
 import '../providers/todo_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class TodoPage extends ConsumerWidget {
   const TodoPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final todos = ref.watch(todoListProvider);
+    final todos = ref.watch(incompleteTodoProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('ToDo Riverpod')),
@@ -15,29 +17,42 @@ class TodoPage extends ConsumerWidget {
           ? const Center(child: Text('Belum ada tugas'))
           : ListView.builder(
               itemCount: todos.length,
-              itemBuilder: (context, index) => ListTile(
-                leading: Checkbox(
-                  value: todos[index].done,
-                  onChanged: (_) =>
-                      ref.read(todoListProvider.notifier).toggle(index),
-                ),
-                title: Text(
-                  todos[index].title,
-                  style: TextStyle(
-                      decoration: todos[index].done
-                          ? TextDecoration.lineThrough
-                          : null),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () =>
-                      ref.read(todoListProvider.notifier).remove(index),
-                ),
-              ),
+              itemBuilder: (context, index) {
+                final todo = todos[index];
+
+                return TodoTile(
+                  title: todo.title,
+                  done: todo.done,
+                  onToggle: () {
+                    ref.read(todoListProvider.notifier).toggleTodo(todo);
+                  },
+                  onDelete: () {
+                    ref.read(todoListProvider.notifier).removeTodo(todo);
+                  },
+                );
+              },
             ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddDialog(context, ref),
         child: const Icon(Icons.add),
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: 0,
+        onDestinationSelected: (index) {
+          if (index == 1) {
+            context.go('/stats');
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.checklist),
+            label: 'ToDo',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.bar_chart),
+            label: 'Statistik',
+          ),
+        ],
       ),
     );
   }
