@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'pages/settings_page.dart';
-import 'pages/home_page.dart';
+import 'router.dart';
 
 void main() {
   runApp(
@@ -19,7 +19,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final darkMode = ref.watch(darkModeProvider);
 
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Offline Notes',
 
@@ -37,7 +37,7 @@ class MyApp extends ConsumerWidget {
           ? ThemeMode.dark
           : ThemeMode.light,
 
-      home: const HomePage(),
+      routerConfig: router,
     );
   }
 }

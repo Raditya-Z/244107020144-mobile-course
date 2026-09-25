@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/local/note.dart';
 import '../data/repositories/note_repository.dart';
 import '../data/sync.dart';
+import '../widgets/note_tile.dart';
 
 final noteRepositoryProvider = Provider<NoteRepository>(
   (ref) => NoteRepository(),
@@ -83,7 +84,7 @@ class NotesPage extends ConsumerWidget {
       },
     );
   }
-  
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(notesProvider);
@@ -139,27 +140,18 @@ class NotesPage extends ConsumerWidget {
             itemBuilder: (context, index) {
               final note = items[index];
 
-              return ListTile(
-                title: Text(note.title),
-                subtitle: Text(note.body),
+              return NoteTile(
+                note: note,
+                onDelete: () async {
+                  if (note.id == null) return;
 
-                leading: note.dirty
-                    ? const Icon(Icons.cloud_off)
-                    : const Icon(Icons.cloud_done),
+                  await ref
+                      .read(noteRepositoryProvider)
+                      .deleteNote(note.id!);
 
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () async {
-                    if (note.id == null) return;
-
-                    await ref
-                        .read(noteRepositoryProvider)
-                        .deleteNote(note.id!);
-
-                    ref.invalidate(notesProvider);
-                    ref.invalidate(dirtyCountProvider);
-                  },
-                ),
+                  ref.invalidate(notesProvider);
+                  ref.invalidate(dirtyCountProvider);
+                },
               );
             },
           );

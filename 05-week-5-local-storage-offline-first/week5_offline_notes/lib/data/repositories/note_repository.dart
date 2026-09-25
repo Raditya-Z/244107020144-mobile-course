@@ -76,4 +76,21 @@ class NoteRepository {
       where: 'dirty = 1',
     );
   }
+
+  Future<Note?> fetchNoteById(int id) async {
+    final db = await _openDb();
+
+    final rows = await db.query(
+      'notes',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    if (rows.isEmpty) {
+      return null;
+    }
+
+    return Note.fromMap(rows.first);
+  }
 }
