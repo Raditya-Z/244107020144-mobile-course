@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/local/note.dart';
 import '../data/repositories/note_repository.dart';
+import '../data/sync.dart';
 
 final noteRepositoryProvider = Provider<NoteRepository>(
   (ref) => NoteRepository(),
@@ -28,7 +29,7 @@ class NotesPage extends ConsumerWidget {
 
     await showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Tambah Catatan'),
           content: Column(
@@ -51,7 +52,7 @@ class NotesPage extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               },
               child: const Text('Batal'),
             ),
@@ -66,12 +67,14 @@ class NotesPage extends ConsumerWidget {
                       body: bodyController.text.trim(),
                     );
 
+                // Tutup dialog terlebih dahulu
+                if (dialogContext.mounted) {
+                  Navigator.pop(dialogContext);
+                }
+
+                // Setelah dialog ditutup, perbarui data
                 ref.invalidate(notesProvider);
                 ref.invalidate(dirtyCountProvider);
-
-                if (context.mounted) {
-                  Navigator.pop(context);
-                }
               },
               child: const Text('Simpan'),
             ),
@@ -79,11 +82,8 @@ class NotesPage extends ConsumerWidget {
         );
       },
     );
-
-    titleController.dispose();
-    bodyController.dispose();
   }
-
+  
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notes = ref.watch(notesProvider);
@@ -93,17 +93,27 @@ class NotesPage extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Offline Notes'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: Center(
-              child: dirtyCount.when(
-                data: (count) => Text(
-                  'Belum sync: $count',
-                ),
-                loading: () => const Text('...'),
-                error: (_, _) => const Text('Error'),
+          Center(
+            child: dirtyCount.when(
+              data: (count) => Text(
+                'Belum sync: $count',
               ),
+              loading: () => const Text('...'),
+              error: (_, _) => const Text('Error'),
             ),
+          ),
+
+          IconButton(
+            icon: const Icon(Icons.sync),
+            tooltip: 'Sinkronisasi',
+            onPressed: () async {
+              final repo = ref.read(noteRepositoryProvider);
+
+              await syncNotes(repo);
+
+              ref.invalidate(notesProvider);
+              ref.invalidate(dirtyCountProvider);
+            },
           ),
         ],
       ),

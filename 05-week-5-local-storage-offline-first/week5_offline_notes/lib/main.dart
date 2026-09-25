@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'pages/settings_page.dart';
-import 'pages/notes_page.dart';
+import 'pages/home_page.dart';
 
 void main() {
   runApp(
@@ -37,7 +37,7 @@ class MyApp extends ConsumerWidget {
           ? ThemeMode.dark
           : ThemeMode.light,
 
-      home: const NotesPage(),
+      home: const HomePage(),
     );
   }
 }
