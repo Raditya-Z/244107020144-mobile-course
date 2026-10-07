@@ -6,12 +6,9 @@ import 'token_store.dart';
 Dio buildDio({
   required TokenStore tokenStore,
   required AuthRepository authRepository,
+  String baseUrl = 'https://jsonplaceholder.typicode.com',
 }) {
-  final dio = Dio(
-    BaseOptions(
-      baseUrl: 'https://jsonplaceholder.typicode.com',
-    ),
-  );
+  final dio = Dio(BaseOptions(baseUrl: baseUrl));
 
   dio.interceptors.add(
     InterceptorsWrapper(
@@ -34,18 +31,13 @@ Dio buildDio({
           }
 
           try {
-            final newAccess =
-                await authRepository.refresh(refresh);
+            final newAccess = await authRepository.refresh(refresh);
 
-            await tokenStore.save(
-              access: newAccess,
-              refresh: refresh,
-            );
+            await tokenStore.save(access: newAccess, refresh: refresh);
 
             final request = error.requestOptions;
 
-            request.headers['Authorization'] =
-                'Bearer $newAccess';
+            request.headers['Authorization'] = 'Bearer $newAccess';
 
             final response = await dio.fetch(request);
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -5,20 +7,18 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'router.dart';
 import 'messaging/push_service.dart';
+import 'data/api_client.dart';
+import 'providers/auth_provider.dart';
 
 @pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(
-  RemoteMessage message,
-) async {
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // TANPA BuildContext/ref/navigasi. Android: isolate terpisah;
+  // iOS: tidak memerlukan isolate terpisah, tetap tidak boleh mengubah UI.
   await Firebase.initializeApp();
 
-  debugPrint(
-    'Pesan background diterima: ${message.messageId}',
-  );
+  debugPrint('Pesan background diterima: ${message.messageId}');
 
-  debugPrint(
-    'Data: ${message.data}',
-  );
+  debugPrint('Data: ${message.data}');
 }
 
 Future<void> main() async {
@@ -26,15 +26,9 @@ Future<void> main() async {
 
   await Firebase.initializeApp();
 
-  FirebaseMessaging.onBackgroundMessage(
-    firebaseMessagingBackgroundHandler,
-  );
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerStatefulWidget {
@@ -51,19 +45,35 @@ class _MyAppState extends ConsumerState<MyApp> {
   void initState() {
     super.initState();
 
-    Future.microtask(() async {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
       _pushService = PushService(
+        devicesApi: buildDio(
+          tokenStore: ref.read(tokenStoreProvider),
+          authRepository: ref.read(authRepositoryProvider),
+          baseUrl: const String.fromEnvironment('DEVICES_API_BASE_URL'),
+        ),
         go: (route) {
-          debugPrint(
-            'Navigasi ke route: $route',
-          );
+          if (!mounted) return;
+          debugPrint('Navigasi ke route: $route');
 
           ref.read(routerProvider).go(route);
         },
       );
 
-      await _pushService!.init();
+      try {
+        await _pushService!.init();
+      } catch (error) {
+        debugPrint('Inisialisasi push gagal: ${error.runtimeType}');
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    final service = _pushService;
+    if (service != null) unawaited(service.dispose());
+    super.dispose();
   }
 
   @override
@@ -75,9 +85,7 @@ class _MyAppState extends ConsumerState<MyApp> {
       title: 'Campus Notify',
       routerConfig: router,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue,
-        ),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
     );
