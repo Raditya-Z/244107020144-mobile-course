@@ -1,16 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'pages/home_page.dart';
 import 'pages/login_page.dart';
-import 'providers/auth_provider.dart';
+import 'pages/home_page.dart';
 import 'pages/announcement_page.dart';
+import 'providers/auth_provider.dart';
+import 'routes.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: AppRoutes.login,
 
     redirect: (context, state) {
       if (auth.isLoading) {
@@ -18,14 +19,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       final loggedIn = auth.value ?? false;
-      final atLogin = state.matchedLocation == '/login';
+
+      final atLogin =
+          state.matchedLocation == AppRoutes.login;
 
       if (!loggedIn && !atLogin) {
-        return '/login';
+        return AppRoutes.login;
       }
 
       if (loggedIn && atLogin) {
-        return '/';
+        return AppRoutes.home;
       }
 
       return null;
@@ -33,21 +36,21 @@ final routerProvider = Provider<GoRouter>((ref) {
 
     routes: [
       GoRoute(
-        path: '/login',
+        path: AppRoutes.login,
         builder: (context, state) {
           return const LoginPage();
         },
       ),
 
       GoRoute(
-        path: '/',
+        path: AppRoutes.home,
         builder: (context, state) {
           return const HomePage();
         },
       ),
 
       GoRoute(
-        path: '/pengumuman/:id',
+        path: AppRoutes.announcementPattern,
         builder: (context, state) {
           final id = state.pathParameters['id']!;
 

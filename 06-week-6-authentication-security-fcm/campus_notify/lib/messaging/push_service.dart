@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import '../routes.dart';
 
 class PushService {
   PushService({required this.go, required this.devicesApi});
@@ -61,7 +62,7 @@ class PushService {
     );
     _subscriptions.add(
       FirebaseMessaging.onMessageOpenedApp.listen(
-        (message) => _open(message.data['route']),
+        (message) => _open(routeFromMessage(message.data)),
       ),
     );
     _subscriptions.add(
@@ -79,7 +80,10 @@ class PushService {
       _open(launch?.notificationResponse?.payload);
     }
     final initial = await _messaging.getInitialMessage();
-    if (initial != null) _open(initial.data['route']);
+
+    if (initial != null) {
+      _open(routeFromMessage(initial.data));
+    }
     // Android 13+: dialog runtime POST_NOTIFICATIONS + deklarasi manifest.
     // Android <=12: tidak ada dialog runtime notifikasi.
     // iOS: meminta izin alert/badge/sound melalui APNs.
@@ -145,7 +149,7 @@ class PushService {
           presentSound: true,
         ),
       ),
-      payload: message.data['route']?.toString(),
+      payload: routeFromMessage(message.data),
     );
   }
 
