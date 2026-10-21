@@ -1,14 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../data/auth_repository.dart';
-import '../data/token_store.dart';
+import '../features/auth/data/repositories/auth_repository_impl.dart';
+import '../features/auth/domain/repositories/auth_repository.dart';
+import '../features/auth/data/services/token_store.dart';
 
 final tokenStoreProvider = Provider<TokenStore>(
   (ref) => TokenStore(),
 );
 
 final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => AuthRepository(),
+  (ref) => AuthRepositoryImpl(),
 );
 
 final authProvider =

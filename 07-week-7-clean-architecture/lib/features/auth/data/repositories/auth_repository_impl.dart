@@ -1,14 +1,9 @@
-class AuthSession {
-  const AuthSession({
-    required this.access,
-    required this.refresh,
-  });
 
-  final String access;
-  final String refresh;
-}
+import '../../domain/entities/auth_session.dart';
+import '../../domain/repositories/auth_repository.dart';
 
-class AuthRepository {
+class AuthRepositoryImpl implements AuthRepository {
+  @override
   Future<AuthSession> login({
     required String email,
     required String password,
@@ -27,6 +22,7 @@ class AuthRepository {
     );
   }
 
+  @override
   Future<String> refresh(String refreshToken) async {
     await Future.delayed(
       const Duration(milliseconds: 300),

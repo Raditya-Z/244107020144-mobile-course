@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import 'auth_repository.dart';
-import 'token_store.dart';
+import '../features/auth/domain/repositories/auth_repository.dart';
+import '../features/auth/data/services/token_store.dart';
 
 Dio buildDio({
   required TokenStore tokenStore,

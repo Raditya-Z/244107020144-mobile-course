@@ -57,3 +57,54 @@ dengan tiga layer utama:
 
 Arah dependensi:
 Presentation -> Domain <- Data
+
+
+## Praktikum 2 — Pemisahan Domain dan Data per Fitur
+
+### A. Perubahan Struktur
+
+Refactoring dilakukan secara bertahap pada fitur autentikasi
+dengan pendekatan feature-first.
+
+Struktur fitur Auth saat ini:
+
+- `lib/features/auth/domain/entities/auth_session.dart`
+  - Menyimpan entity AuthSession yang berisi access token
+    dan refresh token.
+- `lib/features/auth/domain/repositories/auth_repository.dart`
+  - Mendefinisikan kontrak AuthRepository untuk operasi
+    login dan refresh token.
+- `lib/features/auth/data/repositories/auth_repository_impl.dart`
+  - Mengimplementasikan kontrak AuthRepository menggunakan
+    simulasi login dan refresh token.
+- `lib/features/auth/data/services/token_store.dart`
+  - Menangani penyimpanan, pembacaan, dan penghapusan token
+    menggunakan FlutterSecureStorage.
+
+### B. Penyesuaian Dependensi
+
+1. `lib/providers/auth_provider.dart` menggunakan kontrak
+   AuthRepository dari Domain dan membuat implementasi
+   AuthRepositoryImpl melalui provider Riverpod.
+2. `lib/data/api_client.dart` menggunakan kontrak
+   AuthRepository dari Domain untuk proses refresh token.
+3. TokenStore dipindahkan dari `lib/data/` ke
+   `lib/features/auth/data/services/`.
+4. Implementasi AuthRepository lama di
+   `lib/data/auth_repository.dart` dihapus setelah
+   implementasi baru digunakan.
+
+### C. Verifikasi
+
+- `flutter analyze`: lulus, tidak ditemukan masalah statis.
+- `flutter test`: lulus, seluruh 6 pengujian berhasil.
+
+### D. Catatan
+
+Implementasi login dan refresh token masih menggunakan
+simulasi (mock), belum terhubung ke backend autentikasi
+yang sesungguhnya.
+
+Pemisahan Domain dan Data telah diterapkan pada bagian
+autentikasi yang dikerjakan. Refactoring fitur lain dan
+pemisahan use case belum dinyatakan selesai.
