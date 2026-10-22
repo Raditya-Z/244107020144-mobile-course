@@ -1,424 +1,62 @@
-# Verification AI Challenge
+# Verifikasi Dependency Rule dan Proyek
 
-## 1. Tujuan Verifikasi
+## 1. Pemeriksaan Dependency Rule
 
-Verifikasi dilakukan untuk memastikan kode yang dihasilkan oleh Codex
-sesuai dengan kebutuhan AI Challenge pada Campus Notification App.
+Pemeriksaan ini dilakukan untuk memastikan pemisahan tanggung jawab antara presentation, domain, dan data sudah sesuai dengan prinsip Clean Architecture.
 
-Verifikasi dilakukan terhadap:
-
-- background handler;
-- permission notifikasi;
-- FCM token;
-- token refresh;
-- local notification;
-- deep link;
-- topic subscription;
-- keamanan token;
-- pengujian Foreground, Background, dan Terminated.
-
----
-
-## 2. Checklist Verifikasi
-
-| No | Kriteria | Hasil |
+| Pemeriksaan | Hasil dan Arti | Status |
 |---|---|---|
-| 1 | Background handler dibuat sebagai fungsi top-level | ✅ Sesuai |
-| 2 | Menggunakan `@pragma('vm:entry-point')` | ✅ Sesuai |
-| 3 | Background handler tidak menggunakan `BuildContext` | ✅ Sesuai |
-| 4 | Menggunakan `requestPermission()` | ✅ Sesuai |
-| 5 | Menggunakan `getToken()` | ✅ Sesuai |
-| 6 | Menggunakan `onTokenRefresh` | ✅ Sesuai |
-| 7 | Token baru diarahkan ke `POST /devices` | ✅ Diimplementasikan |
-| 8 | Foreground menggunakan local notification manual | ✅ Sesuai |
-| 9 | Background menggunakan `onMessageOpenedApp` | ✅ Sesuai |
-| 10 | Terminated menggunakan `getInitialMessage()` | ✅ Sesuai |
-| 11 | Subscribe topic `pengumuman-kampus` | ✅ Sesuai |
-| 12 | Unsubscribe topic tersedia | ✅ Sesuai |
-| 13 | Route dibaca dari `data.route` | ✅ Sesuai |
-| 14 | Klik Foreground menuju route yang benar | ✅ Berhasil |
-| 15 | Klik Background menuju route yang benar | ✅ Berhasil |
-| 16 | Klik Terminated menuju route yang benar | ✅ Berhasil |
-| 17 | Token/secret tidak di-hardcode | ✅ Sesuai |
-| 18 | Token tidak dicetak secara penuh pada log | ✅ Sesuai |
+| Presentation tidak mengakses Dio, database, secure storage, SharedPreferences, atau parsing JSON secara langsung | Pemeriksaan sebelumnya tidak menemukan kecocokan pada pola dan direktori yang diperiksa. Namun, cakupan pencarian belum memastikan seluruh file presentation sudah diperiksa. | Perlu diverifikasi |
+| Domain tidak mengimpor Flutter, Dio, SQLite, atau Firebase | Pemeriksaan sebelumnya tidak menemukan kecocokan. Karena pencarian menggunakan pola direktori tertentu, hasil tersebut belum cukup untuk memastikan seluruh domain dan core bebas dari import yang dilarang. | Perlu diverifikasi |
+| Repository interface dan implementasi berada di layer yang sesuai | Dari file yang diperiksa, kontrak repository berada di `features/notes/domain/repositories/note_repository.dart`, sedangkan implementasinya berada di `features/notes/data/repositories/note_repository_impl.dart`. Pasangan repository auth juga ditemukan pada folder domain dan data. | Lulus untuk file yang diperiksa |
+| Dependency injection menggunakan provider Riverpod | Provider notes menghubungkan repository dan use case. Provider auth juga menghubungkan dependency yang dibutuhkan. Namun, seluruh wiring belum diverifikasi. | Perlu diverifikasi |
+| Pemeriksaan akses data mentah pada seluruh file Dart | Belum ada hasil pemindaian menyeluruh yang tercatat. Pemeriksaan ini diperlukan untuk memastikan tidak ada akses langsung ke layanan eksternal pada presentation. | Belum dijalankan |
 
----
+### Perintah pemeriksaan Presentation
 
-## 3. Verifikasi Background Handler
-
-Background handler telah dibuat sebagai fungsi top-level:
-
-```dart
-@pragma('vm:entry-point')
-Future<void> firebaseMessagingBackgroundHandler(
-  RemoteMessage message,
-) async {
-  await Firebase.initializeApp();
-
-  debugPrint(
-    'Pesan background diterima: ${message.messageId}',
-  );
-
-  debugPrint('Data: ${message.data}');
-}
+```powershell
+Get-ChildItem lib -Recurse -File -Filter *.dart |
+Select-String -Pattern 'Dio\(|openDatabase|getDatabasesPath|FlutterSecureStorage|SharedPreferences\.getInstance|jsonDecode'
 ```
 
-Handler kemudian didaftarkan menggunakan:
+Periksa setiap hasil berdasarkan lokasi file dan tanggung jawabnya. Tidak semua hasil otomatis merupakan pelanggaran jika pemanggilan tersebut berada pada layer data yang memang bertanggung jawab mengakses sumber data.
 
-```dart
-FirebaseMessaging.onBackgroundMessage(
-  firebaseMessagingBackgroundHandler,
-);
+### Perintah pemeriksaan Domain
+
+```powershell
+Get-ChildItem lib -Recurse -File -Filter *.dart |
+Where-Object { $_.FullName -match '\\domain\\|\\core\\' } |
+Select-String -Pattern "import 'package:flutter|import 'package:dio|import 'package:sqflite|import 'package:firebase"
 ```
 
-Background handler tidak melakukan navigasi dan tidak menggunakan
-`BuildContext`.
+Jika ditemukan hasil, periksa apakah file tersebut benar-benar berada di domain atau core dan apakah import tersebut melanggar aturan dependency.
 
-**Hasil: Sesuai**
+## 2. Validasi Proyek
 
----
-
-## 4. Verifikasi Permission
-
-Aplikasi meminta permission menggunakan:
-
-```dart
-final settings = await _messaging.requestPermission(
-  alert: true,
-  badge: true,
-  sound: true,
-);
-```
-
-Implementasi juga memberikan keterangan perbedaan platform:
-
-- Android 13+ memerlukan runtime notification permission.
-- Android versi sebelumnya tidak menggunakan dialog runtime yang sama.
-- iOS menggunakan permission alert, badge, dan sound.
-
-**Hasil: Sesuai**
-
----
-
-## 5. Verifikasi FCM Token
-
-FCM token diperoleh menggunakan:
-
-```dart
-final token = await _messaging.getToken();
-```
-
-Token kemudian diproses melalui:
-
-```dart
-_postToken(token);
-```
-
-Implementasi tidak mencetak token FCM secara penuh ke terminal.
-
-**Hasil: Sesuai**
-
----
-
-## 6. Verifikasi Token Refresh
-
-Listener token refresh telah dibuat:
-
-```dart
-_messaging.onTokenRefresh.listen(
-  (token) {
-    unawaited(
-      _guard(() => _postToken(token)),
-    );
-  },
-);
-```
-
-Token baru tidak hanya ditampilkan melalui log, tetapi diteruskan
-ke fungsi `_postToken()`.
-
-Fungsi tersebut mempersiapkan request:
-
-```text
-POST /devices
-```
-
-dengan data:
-
-```dart
-{
-  'token': token,
-  'platform': defaultTargetPlatform.name,
-}
-```
-
-Dengan demikian mekanisme pengiriman token baru ke backend sudah
-diimplementasikan.
-
-Backend kampus belum tersedia sehingga request aktual belum dapat
-diverifikasi sampai berhasil diterima oleh server.
-
-**Hasil: Implementasi sesuai, backend belum tersedia**
-
----
-
-## 7. Verifikasi Foreground
-
-Ketika aplikasi berada pada kondisi Foreground, pesan diterima melalui:
-
-```dart
-FirebaseMessaging.onMessage.listen(...)
-```
-
-Notifikasi kemudian ditampilkan secara manual menggunakan:
-
-```dart
-FlutterLocalNotificationsPlugin
-```
-
-Custom Data yang digunakan:
-
-```text
-route = /pengumuman/3
-id = 3
-```
-
-Setelah notifikasi diklik, aplikasi berhasil membuka:
-
-```text
-/pengumuman/3
-```
-
-dan menampilkan:
-
-```text
-Pengumuman ID: 3
-```
-
-**Hasil: Berhasil**
-
----
-
-## 8. Verifikasi Background
-
-Ketika aplikasi berada di Background, notifikasi sistem berhasil
-ditampilkan.
-
-Klik notifikasi ditangani melalui:
-
-```dart
-FirebaseMessaging.onMessageOpenedApp.listen(...)
-```
-
-Data route berhasil dibaca dan aplikasi membuka:
-
-```text
-/pengumuman/3
-```
-
-Halaman menampilkan:
-
-```text
-Pengumuman ID: 3
-```
-
-**Hasil: Berhasil**
-
----
-
-## 9. Verifikasi Terminated
-
-Aplikasi ditutup dari Recent Apps kemudian notifikasi dikirim.
-
-Notifikasi sistem berhasil muncul.
-
-Ketika notifikasi diklik, aplikasi dibuka kembali dan pesan diperoleh
-menggunakan:
-
-```dart
-final initial = await _messaging.getInitialMessage();
-```
-
-Route dari pesan kemudian digunakan untuk membuka:
-
-```text
-/pengumuman/3
-```
-
-Halaman menampilkan:
-
-```text
-Pengumuman ID: 3
-```
-
-**Hasil: Berhasil**
-
----
-
-## 10. Verifikasi Topic
-
-Topic yang digunakan adalah:
-
-```text
-pengumuman-kampus
-```
-
-Subscribe:
-
-```dart
-Future<void> subscribeTopic() =>
-    _messaging.subscribeToTopic(topic);
-```
-
-Unsubscribe:
-
-```dart
-Future<void> unsubscribeTopic() =>
-    _messaging.unsubscribeFromTopic(topic);
-```
-
-**Hasil: Sesuai**
-
----
-
-## 11. Verifikasi Deep Link
-
-Route diperoleh dari:
-
-```dart
-message.data['route']
-```
-
-Route kemudian divalidasi oleh fungsi `_open()` sebelum diteruskan
-ke callback navigasi.
-
-Contoh payload:
-
-```text
-route = /pengumuman/3
-```
-
-Target berhasil dibuka:
-
-```text
-Detail Pengumuman
-Pengumuman ID: 3
-```
-
-**Hasil: Berhasil**
-
----
-
-## 12. Temuan Saat Verifikasi
-
-Pada pengujian awal ditemukan masalah ketika notifikasi Foreground
-diklik.
-
-Log menunjukkan:
-
-```text
-Payload klik notifikasi:
-Navigasi dibatalkan: route tidak valid
-```
-
-Setelah dilakukan pemeriksaan, data FCM terbaca:
-
-```text
-{route          : /pengumuman/3, id: 3}
-```
-
-Key `route` ternyata memiliki spasi tambahan sehingga:
-
-```dart
-message.data['route']
-```
-
-tidak menemukan nilai yang sesuai.
-
-Custom Data kemudian diperbaiki menjadi:
-
-```text
-route = /pengumuman/3
-id = 3
-```
-
-Setelah perbaikan, navigasi berhasil pada Foreground, Background,
-dan Terminated.
-
----
-
-## 13. Verifikasi Pengiriman Token Backend
-
-Pada terminal ditemukan:
-
-```text
-Operasi push gagal: StateError
-```
-
-Pemeriksaan menunjukkan bahwa error terjadi karena:
-
-```dart
-const String.fromEnvironment(
-  'DEVICES_API_BASE_URL',
-)
-```
-
-belum memiliki nilai.
-
-Backend HTTPS untuk:
-
-```text
-POST /devices
-```
-
-belum tersedia pada praktikum.
-
-Kode hasil AI sengaja memeriksa validitas endpoint agar token tidak
-dikirim ke endpoint yang tidak valid atau tidak aman.
-
-Oleh karena itu, implementasi token backend dipertahankan dan
-didokumentasikan, tetapi keberhasilan penerimaan token oleh backend
-belum diklaim.
-
----
-
-## 14. Hasil Pengujian Tiga State
-
-| Kondisi | Notifikasi | Deep Link | Hasil |
+| Pemeriksaan | Perintah | Hasil | Status |
 |---|---|---|---|
-| Foreground | Local notification | `/pengumuman/3` | ✅ Berhasil |
-| Background | System notification | `/pengumuman/3` | ✅ Berhasil |
-| Terminated | System notification | `/pengumuman/3` | ✅ Berhasil |
+| Static analysis | `flutter analyze -v` | `No issues found! (ran in 4.4s)` | Lulus |
+| Automated tests | `flutter test --reporter expanded` | `All tests passed!` dengan 6 test berhasil | Lulus |
 
----
+### Hasil Static Analysis
 
-## 15. Keputusan Akhir
+Saya menjalankan perintah `flutter analyze -v` untuk memeriksa kemungkinan masalah pada kode Dart. Hasilnya menunjukkan `No issues found!`, sehingga tidak ditemukan masalah oleh static analyzer pada saat pemeriksaan dilakukan.
 
-Berdasarkan proses verifikasi, kode hasil Codex telah memenuhi sebagian
-besar kebutuhan AI Challenge.
+### Hasil Automated Tests
 
-Implementasi yang telah berhasil diverifikasi meliputi:
+Saya menjalankan perintah `flutter test --reporter expanded`. Hasilnya menunjukkan enam test berhasil, yaitu:
 
-- permission notifikasi;
-- FCM token;
-- `onTokenRefresh`;
-- background handler;
-- local notification Foreground;
-- `onMessageOpenedApp`;
-- `getInitialMessage`;
-- subscribe dan unsubscribe topic;
-- pembacaan `data.route`;
-- deep link Foreground;
-- deep link Background;
-- deep link Terminated.
+1. `routeFromMessage` menangani route kosong dan tanpa slash.
+2. `routeFromMessage` membawa ID pengumuman dari payload.
+3. Provider auth membaca status login dari token.
+4. Kegagalan refresh auth menyebabkan sesi dibersihkan.
+5. Error API dengan status 401 menghasilkan pesan sesi berakhir.
+6. Error API akibat timeout menghasilkan pesan koneksi timeout.
 
-Pada pengujian awal ditemukan kesalahan konfigurasi Custom Data Firebase,
-yaitu adanya spasi tambahan pada key `route`. Setelah konfigurasi
-diperbaiki, ketiga state berhasil bekerja sesuai kebutuhan.
+Hasil tersebut menunjukkan bahwa seluruh test yang tersedia pada eksekusi ini berhasil. Namun, test tersebut belum membuktikan bahwa skenario sukses dan failure domain menggunakan fake repository sudah diuji.
 
-Mekanisme `POST /devices` juga telah diimplementasikan, tetapi pengujian
-aktual terhadap backend belum dilakukan karena backend kampus belum
-tersedia.
+## 3. Kesimpulan
 
-Dengan demikian, hasil AI **diterima setelah melalui verifikasi,
-perbaikan konfigurasi, dan pengujian manual**.
+Berdasarkan hasil pemeriksaan terbaru, `flutter analyze` dan `flutter test` berhasil dijalankan tanpa masalah yang dilaporkan. Pemisahan kontrak dan implementasi repository juga sudah sesuai pada file yang diperiksa.
+
+Namun, pemeriksaan menyeluruh terhadap dependency rule masih perlu dilakukan. Saya juga perlu memastikan bahwa pengujian domain menggunakan fake repository tersedia jika ingin memenuhi seluruh checklist praktikum.

@@ -1,253 +1,43 @@
-# Pengujian AI Challenge
+# Dokumentasi Pengujian
 
-## 1. Tujuan Pengujian
+## 1. Tujuan
 
-Pengujian dilakukan untuk memastikan implementasi Firebase Cloud Messaging
-hasil bantuan AI dapat bekerja pada tiga kondisi aplikasi, yaitu
-Foreground, Background, dan Terminated.
+Pengujian dilakukan untuk memastikan fungsi aplikasi berjalan sesuai harapan. Pengujian domain atau use case sebaiknya tidak bergantung pada jaringan maupun database sungguhan. Fake repository dapat digunakan untuk memberikan hasil yang sudah ditentukan, sehingga skenario sukses dan failure bisa diuji secara terpisah.
 
-Payload yang digunakan pada pengujian:
+## 2. Skenario dan Hasil Pengujian
 
-```text
-route = /pengumuman/3
-id = 3
-```
-
-Target navigasi:
-
-```text
-/pengumuman/3
-```
-
-Halaman yang diharapkan:
-
-```text
-Detail Pengumuman
-Pengumuman ID: 3
-```
-
----
-
-## 2. Pengujian Foreground
-
-### Kondisi
-
-Aplikasi sedang terbuka dan aktif pada layar.
-
-### Hasil
-
-Notifikasi berhasil diterima melalui `FirebaseMessaging.onMessage`.
-Karena aplikasi berada pada kondisi foreground, notifikasi ditampilkan
-secara manual menggunakan `flutter_local_notifications`.
-
-Setelah notifikasi diklik, payload `route` berhasil dibaca dan aplikasi
-berpindah ke:
-
-```text
-/pengumuman/3
-```
-
-Halaman menampilkan:
-
-```text
-Pengumuman ID: 3
-```
-
-**Status: Berhasil**
-
-Bukti screenshot:
-
-```text
-HasilAIChallenge-ForegroundNotifikasi.jpg
-HasilAIChallenge-ForegroundKlik.jpg
-```
-
----
-
-## 3. Pengujian Background
-
-### Kondisi
-
-Aplikasi masih berjalan tetapi berada di background setelah tombol Home
-ditekan.
-
-### Hasil
-
-Notifikasi sistem berhasil muncul.
-
-Ketika notifikasi diklik, aplikasi kembali dibuka dan
-`FirebaseMessaging.onMessageOpenedApp` menangani pesan.
-
-Nilai `data.route` berhasil digunakan untuk membuka:
-
-```text
-/pengumuman/3
-```
-
-Halaman menampilkan:
-
-```text
-Pengumuman ID: 3
-```
-
-**Status: Berhasil**
-
-Bukti screenshot:
-
-```text
-HasilAIChallenge-BackgroundNotifikasi.jpg
-HasilAIChallenge-BackgroundKlik.jpg
-```
-
----
-
-## 4. Pengujian Terminated
-
-### Kondisi
-
-Aplikasi ditutup dari Recent Apps sebelum notifikasi dikirim.
-
-### Hasil
-
-Notifikasi sistem berhasil muncul ketika aplikasi dalam kondisi
-terminated.
-
-Setelah notifikasi diklik, aplikasi terbuka kembali dan pesan awal
-ditangani menggunakan:
-
-```dart
-FirebaseMessaging.instance.getInitialMessage()
-```
-
-Nilai `data.route` berhasil mengarahkan aplikasi ke:
-
-```text
-/pengumuman/3
-```
-
-Halaman menampilkan:
-
-```text
-Pengumuman ID: 3
-```
-
-**Status: Berhasil**
-
-Bukti screenshot:
-
-```text
-HasilAIChallenge-TerminatedNotifikasi.jpg
-HasilAIChallenge-TerminatedKlik.jpg
-```
-
----
-
-## 5. Hasil Pengujian Tiga State
-
-| State | Notifikasi | Navigasi | Hasil |
+| Skenario | Tujuan | Hasil yang Diharapkan | Status |
 |---|---|---|---|
-| Foreground | Local notification tampil | `/pengumuman/3` | Berhasil |
-| Background | System notification tampil | `/pengumuman/3` | Berhasil |
-| Terminated | System notification tampil | `/pengumuman/3` | Berhasil |
+| Use case sukses dengan fake repository | Memastikan hasil sukses diteruskan sesuai kontrak domain. | Data diterima tanpa failure. | Perlu diverifikasi karena test khusus use case dengan fake repository belum ditemukan. |
+| Use case failure dengan fake repository | Memastikan kegagalan ditangani sesuai kontrak domain. | Failure diterima sesuai perilaku yang dirancang. | Perlu diverifikasi karena test khusus failure dengan fake repository belum ditemukan. |
+| Routing pesan push | Memeriksa route kosong, route tanpa slash, dan payload dengan ID pengumuman. | Route sesuai ekspektasi test. | Lulus berdasarkan hasil `flutter test` terbaru. |
+| Status autentikasi dan pesan error API | Memeriksa status login berdasarkan token, kegagalan refresh auth, error 401, dan timeout. | Status dan pesan error sesuai ekspektasi test. | Lulus berdasarkan hasil `flutter test` terbaru. |
+| Seluruh automated test | Memastikan seluruh test yang tersedia berjalan dengan baik. | Semua test yang ada lulus. | Lulus: 6 test berhasil. |
+| Pengujian manual setelah refactor | Memastikan perilaku dan tampilan aplikasi tetap berjalan seperti sebelumnya. | Fitur yang tersedia berfungsi setelah refactor. | Perlu diverifikasi karena belum ada bukti pengujian manual. |
 
----
+## 3. Perintah Pengujian
 
-## 6. Temuan Selama Pengujian
+Pengujian dijalankan dari direktori proyek `07-week-7-clean-architecture` menggunakan perintah:
 
-Pada pengujian awal, notifikasi foreground berhasil tampil tetapi ketika
-diklik aplikasi tidak berpindah ke halaman pengumuman.
+```powershell
+flutter test --reporter expanded
+```
 
-Log menunjukkan:
+Hasil eksekusi terbaru:
 
 ```text
-Payload klik notifikasi:
-Navigasi dibatalkan: route tidak valid
+00:00 +0: loading test/auth_push_test.dart
+00:00 +1: routeFromMessage menangani route kosong dan tanpa slash
+00:00 +2: routeFromMessage data payload membawa id pengumuman
+00:00 +3: Auth provider auth membaca status login dari token
+00:00 +4: Auth refresh gagal menyebabkan sesi dibersihkan
+00:00 +5: apiErrorMessage status 401 menghasilkan pesan sesi berakhir
+00:00 +6: apiErrorMessage timeout menghasilkan pesan koneksi timeout
+00:00 +6: All tests passed!
 ```
 
-Setelah dilakukan pemeriksaan terhadap data FCM, ditemukan bahwa key
-`route` pada Custom Data Firebase memiliki spasi tambahan.
+Berdasarkan hasil tersebut, enam test yang tersedia berhasil dijalankan. Namun, test tersebut belum membuktikan bahwa use case domain telah diuji menggunakan fake repository.
 
-Data yang salah terbaca seperti:
+## 4. Kesimpulan
 
-```text
-{route          : /pengumuman/3, id: 3}
-```
-
-Sedangkan aplikasi membaca:
-
-```dart
-message.data['route']
-```
-
-Key Custom Data kemudian diperbaiki menjadi:
-
-```text
-route = /pengumuman/3
-id = 3
-```
-
-Setelah perbaikan, payload berhasil dibaca dan navigasi menuju halaman
-pengumuman berhasil dilakukan.
-
----
-
-## 7. Pengujian Token Backend
-
-Implementasi hasil AI telah menyediakan proses:
-
-```text
-getToken()
-      ↓
-POST /devices
-```
-
-serta listener:
-
-```text
-onTokenRefresh
-      ↓
-POST /devices
-```
-
-Namun backend kampus untuk endpoint `/devices` belum tersedia pada
-praktikum ini.
-
-Karena `DEVICES_API_BASE_URL` belum dikonfigurasi, aplikasi menampilkan:
-
-```text
-Operasi push gagal: StateError
-```
-
-Kondisi tersebut tidak mengganggu proses penerimaan FCM maupun navigasi
-notifikasi.
-
-Endpoint yang dipersiapkan:
-
-```text
-POST /devices
-```
-
-Data yang akan dikirim:
-
-```text
-token
-platform
-```
-
----
-
-## 8. Kesimpulan
-
-Berdasarkan pengujian, implementasi Firebase Cloud Messaging berhasil
-berjalan pada kondisi Foreground, Background, dan Terminated.
-
-Notifikasi berhasil diterima dan klik notifikasi berhasil membuka route
-`/pengumuman/3` sesuai data yang dikirim melalui Firebase.
-
-Ditemukan kesalahan pada penulisan key `route` pada Custom Data Firebase
-saat pengujian awal. Setelah key diperbaiki, fitur deep link berhasil
-berjalan sesuai kebutuhan.
-
-Pengiriman token ke endpoint `/devices` telah diimplementasikan pada
-kode, tetapi pengujian aktual ke backend belum dilakukan karena backend
-belum tersedia.
+Hasil pengujian otomatis menunjukkan bahwa enam test yang tersedia lulus. Pengujian tersebut mencakup routing pesan push, status autentikasi, dan pemetaan pesan error API. Pengujian sukses dan failure pada domain menggunakan fake repository masih perlu dilengkapi atau diverifikasi. Pengujian manual setelah refactor juga perlu dilakukan untuk memastikan perilaku aplikasi tetap sama.
