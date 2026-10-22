@@ -26,7 +26,9 @@ class NoteRepositoryImpl implements NoteRepository {
     } catch (e) {
       return (
         notes: const <Note>[],
-        failure: LocalFailure('Gagal membaca catatan: $e'),
+        failure: const LocalFailure(
+          'Catatan gagal dimuat. Silakan coba lagi.',
+        ),
       );
     }
   }
@@ -63,7 +65,9 @@ class NoteRepositoryImpl implements NoteRepository {
     } catch (e) {
       return (
         note: null,
-        failure: LocalFailure('Gagal menyimpan catatan: $e'),
+        failure: const LocalFailure(
+          'Catatan gagal disimpan. Silakan coba lagi.',
+        ),
       );
     }
   }
