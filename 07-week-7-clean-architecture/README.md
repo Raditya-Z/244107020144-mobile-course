@@ -108,3 +108,121 @@ yang sesungguhnya.
 Pemisahan Domain dan Data telah diterapkan pada bagian
 autentikasi yang dikerjakan. Refactoring fitur lain dan
 pemisahan use case belum dinyatakan selesai.
+
+---
+
+# Praktikum 3: Presentation, DI, dan Verifikasi
+
+## 1. Dependency Injection dengan Riverpod
+
+Dependency injection diterapkan menggunakan Riverpod tanpa package DI tambahan.
+
+Pada fitur Notes, `notes_providers.dart` menghubungkan repository, use case `GetNotes`, dan state yang digunakan oleh halaman Notes. Pada fitur Auth, `auth_provider.dart` menggunakan `LoginUseCase` untuk menjalankan proses login.
+
+Dengan cara ini, halaman tidak perlu membuat repository secara langsung dan lebih mudah diuji.
+
+## 2. Verifikasi Dependency Rule
+
+Pemeriksaan dilakukan menggunakan PowerShell untuk mencari akses data mentah pada presentation dan import framework pada domain.
+
+Hasil pemeriksaan:
+
+- Presentation: tidak ditemukan kecocokan terhadap pola akses Dio, database, secure storage, SharedPreferences, dan JSON yang diperiksa.
+- Domain: tidak ditemukan kecocokan terhadap pola import Flutter, Dio, SQLite, dan Firebase yang diperiksa.
+- `flutter analyze`: tidak ditemukan masalah.
+
+Pemeriksaan pola memiliki keterbatasan dan tidak menjamin seluruh kemungkinan pelanggaran telah ditemukan.
+
+## 3. Hasil Pengujian
+
+```text
+flutter analyze
+No issues found!
+
+flutter test
+All tests passed!
+```
+
+Hasil terakhir menunjukkan 12 test lulus.
+
+---
+
+# AI Challenge
+
+AI Challenge dilakukan dengan menggunakan Claude untuk memberikan usulan struktur feature-first Clean Architecture. Output AI digunakan sebagai bahan evaluasi, bukan langsung diterapkan seluruhnya.
+
+## Evaluasi dan Keputusan
+
+| Aspek | Keputusan |
+|---|---|
+| Repository interface | Diletakkan di domain |
+| Repository implementation | Diletakkan di data |
+| Dependency injection | Menggunakan Riverpod |
+| Use case | Digunakan sesuai kebutuhan fitur |
+| Testing | Menggunakan fake repository |
+| Fungsi murni | Parsing rute dan formatting tanggal dipisahkan |
+
+Dokumentasi AI Challenge disimpan di folder `docs/`, meliputi prompt, output AI, evaluasi perbaikan, pengujian, dan verifikasi.
+
+---
+
+# Refactoring, Testing, dan Error Umum
+
+## 1. Refactoring
+
+Refactoring yang dilakukan meliputi:
+
+- Menambahkan `LoginUseCase` dan menghubungkannya melalui Riverpod.
+- Memindahkan `routeFromMessage()` ke `lib/core/format.dart`.
+- Menambahkan `formatDate()` untuk formatting tanggal.
+- Mengubah pesan error Notes menjadi lebih ramah pengguna.
+
+## 2. Testing dengan Fake Repository
+
+File `test/get_notes_test.dart` menguji dua skenario:
+
+1. Use case meneruskan daftar catatan dari repository.
+2. Use case meneruskan failure tanpa melempar exception.
+
+File `test/format_test.dart` menguji formatting tanggal dan parsing rute tanpa widget.
+
+Hasil pengujian terakhir menunjukkan seluruh 12 test lulus dan `flutter analyze` bersih.
+
+## 3. Error Umum
+
+| Masalah | Solusi |
+|---|---|
+| Model tidak sesuai dengan entity | Konversi model menjadi entity di batas data |
+| Widget mengakses database langsung | Gunakan repository melalui provider |
+| Test membutuhkan database | Gunakan fake repository |
+| Error teknis tampil kepada pengguna | Kembalikan `Failure` dengan pesan yang sesuai |
+| Refactoring mengubah perilaku aplikasi | Jalankan test dan pengujian manual |
+
+---
+
+# Tugas, Refleksi, dan Referensi
+
+## 1. Hasil Mini Project
+
+Mini project melanjutkan repository Week 6 dengan pendekatan feature-first Clean Architecture. Refactoring dilakukan pada fitur Auth dan Notes, fungsi murni, dependency injection, serta pengujian otomatis.
+
+Hasil terakhir menunjukkan `flutter analyze` bersih dan 12 test lulus. Bukti screenshot before/after dan pengujian manual perlu disertakan sesuai kondisi yang benar-benar telah dilakukan.
+
+## 2. Refleksi
+
+**Mengapa repository interface berada di domain?**
+
+Karena domain mendefinisikan kebutuhan operasi tanpa bergantung pada implementasi database atau API. Jika interface hanya berada di data, domain berisiko bergantung pada detail implementasi.
+
+**Kapan use case dibutuhkan?**
+
+Use case berguna ketika operasi memiliki aturan bisnis, orkestrasi beberapa proses, atau logika yang digunakan kembali. Untuk CRUD sederhana, repository dapat langsung digunakan oleh notifier jika tidak menambah nilai dengan lapisan tambahan.
+
+**Apa risiko over-engineering?**
+
+Use case untuk setiap operasi satu baris dapat menambah file dan boilerplate. Abstraksi sebaiknya digunakan ketika memberikan manfaat nyata bagi pemeliharaan dan pengujian.
+
+**Bagian mana dari usulan AI yang disederhanakan?**
+
+Penggunaan use case dipilih sesuai kebutuhan fitur. Refactoring dilakukan secara bertahap dan tidak memindahkan seluruh layanan infrastruktur sekaligus.
+
