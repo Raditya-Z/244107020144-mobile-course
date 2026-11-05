@@ -60,6 +60,11 @@ class NotesPage extends ConsumerWidget {
             ElevatedButton(
               onPressed: () async {
                 if (titleController.text.trim().isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Judul tidak boleh kosong'),
+                    ),
+                  );
                   return;
                 }
 
