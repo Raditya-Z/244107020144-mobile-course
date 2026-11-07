@@ -5,25 +5,19 @@ import '../local/note.dart';
 
 class NoteRepository {
   NoteRepository({Future<Database> Function()? openDb})
-      : _openDb = openDb ?? openNotesDb;
+    : _openDb = openDb ?? openNotesDb;
 
   final Future<Database> Function() _openDb;
 
   Future<List<Note>> fetchNotes() async {
     final db = await _openDb();
 
-    final rows = await db.query(
-      'notes',
-      orderBy: 'updated_at DESC',
-    );
+    final rows = await db.query('notes', orderBy: 'updated_at DESC');
 
     return rows.map(Note.fromMap).toList();
   }
 
-  Future<Note> addNote({
-    required String title,
-    String body = '',
-  }) async {
+  Future<Note> addNote({required String title, String body = ''}) async {
     final db = await _openDb();
 
     final note = Note(
@@ -33,10 +27,7 @@ class NoteRepository {
       dirty: true,
     );
 
-    final id = await db.insert(
-      'notes',
-      note.toMap(),
-    );
+    final id = await db.insert('notes', note.toMap());
 
     return Note(
       id: id,
@@ -50,11 +41,7 @@ class NoteRepository {
   Future<void> deleteNote(int id) async {
     final db = await _openDb();
 
-    await db.delete(
-      'notes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
+    await db.delete('notes', where: 'id = ?', whereArgs: [id]);
   }
 
   Future<int> countDirty() async {
@@ -70,11 +57,7 @@ class NoteRepository {
   Future<void> markAllSynced() async {
     final db = await _openDb();
 
-    await db.update(
-      'notes',
-      {'dirty': 0},
-      where: 'dirty = 1',
-    );
+    await db.update('notes', {'dirty': 0}, where: 'dirty = 1');
   }
 
   Future<Note?> fetchNoteById(int id) async {

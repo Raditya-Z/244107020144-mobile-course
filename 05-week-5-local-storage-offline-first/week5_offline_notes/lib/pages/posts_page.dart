@@ -42,17 +42,12 @@ class PostsPage extends ConsumerWidget {
         ],
       ),
       body: posts.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        error: (error, stackTrace) => Center(
-          child: Text('Terjadi error: $error'),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stackTrace) =>
+            Center(child: Text('Terjadi error: $error')),
         data: (items) {
           if (items.isEmpty) {
-            return const Center(
-              child: Text('Belum ada cache posts'),
-            );
+            return const Center(child: Text('Belum ada cache posts'));
           }
 
           return ListView.builder(
@@ -61,9 +56,7 @@ class PostsPage extends ConsumerWidget {
               final post = items[index];
 
               return ListTile(
-                leading: CircleAvatar(
-                  child: Text('${post.id}'),
-                ),
+                leading: CircleAvatar(child: Text('${post.id}')),
                 title: Text(post.title),
                 subtitle: Text(
                   post.body,
