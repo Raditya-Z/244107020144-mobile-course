@@ -14,11 +14,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
 
-  final pages = const [
-    NotesPage(),
-    PostsPage(),
-    SettingsPage(),
-  ];
+  final pages = const [NotesPage(), PostsPage(), SettingsPage()];
 
   @override
   Widget build(BuildContext context) {
@@ -32,18 +28,9 @@ class _HomePageState extends State<HomePage> {
           });
         },
         destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.note),
-            label: 'Notes',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.article),
-            label: 'Posts',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
+          NavigationDestination(icon: Icon(Icons.note), label: 'Notes'),
+          NavigationDestination(icon: Icon(Icons.article), label: 'Posts'),
+          NavigationDestination(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );

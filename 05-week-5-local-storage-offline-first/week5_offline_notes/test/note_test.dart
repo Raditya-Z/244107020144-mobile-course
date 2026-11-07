@@ -5,12 +5,8 @@ import 'package:week5_offline_notes/data/repositories/note_repository.dart';
 import 'package:week5_offline_notes/pages/notes_page.dart';
 
 class FakeNoteRepository extends NoteRepository {
-  FakeNoteRepository({
-    this.items = const [],
-    this.throwError = false,
-  }) : super(
-          openDb: () => throw UnimplementedError(),
-        );
+  FakeNoteRepository({this.items = const [], this.throwError = false})
+    : super(openDb: () => throw UnimplementedError());
 
   final List<Note> items;
   final bool throwError;
@@ -25,15 +21,12 @@ class FakeNoteRepository extends NoteRepository {
   }
 
   @override
-  Future<int> countDirty() =>
-      Future.value(items.where((n) => n.dirty).length);
+  Future<int> countDirty() => Future.value(items.where((n) => n.dirty).length);
 }
 
 void main() {
   test('fromMap aman terhadap field yang hilang', () {
-    final note = Note.fromMap({
-      'title': 'Belanja',
-    });
+    final note = Note.fromMap({'title': 'Belanja'});
 
     expect(note.title, 'Belanja');
     expect(note.body, '');
@@ -57,12 +50,7 @@ void main() {
       overrides: [
         noteRepositoryProvider.overrideWithValue(
           FakeNoteRepository(
-            items: [
-              Note(
-                title: 'Tes',
-                updatedAt: DateTime.now(),
-              ),
-            ],
+            items: [Note(title: 'Tes', updatedAt: DateTime.now())],
           ),
         ),
       ],

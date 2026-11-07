@@ -16,9 +16,7 @@ Future<int> syncNotes(NoteRepository repo) async {
   }
 
   // Simulasi proses sinkronisasi ke server
-  await Future.delayed(
-    const Duration(seconds: 1),
-  );
+  await Future.delayed(const Duration(seconds: 1));
 
   await repo.markAllSynced();
 
@@ -29,15 +27,11 @@ Future<int> syncNotes(NoteRepository repo) async {
 Future<List<Post>> readCachedPosts() async {
   final db = await openNotesDb();
 
-  final rows = await db.query(
-    'cached_posts',
-    orderBy: 'id ASC',
-  );
+  final rows = await db.query('cached_posts', orderBy: 'id ASC');
 
   return rows.map((row) {
-    final payload = jsonDecode(
-      row['payload'] as String,
-    ) as Map<String, dynamic>;
+    final payload =
+        jsonDecode(row['payload'] as String) as Map<String, dynamic>;
 
     return Post.fromJson(payload);
   }).toList();
@@ -65,15 +59,11 @@ Future<void> refreshPostsInBackground() async {
       if (item is Map<String, dynamic>) {
         final post = Post.fromJson(item);
 
-        batch.insert(
-          'cached_posts',
-          {
-            'id': post.id,
-            'payload': jsonEncode(post.toJson()),
-            'cached_at': DateTime.now().toIso8601String(),
-          },
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
+        batch.insert('cached_posts', {
+          'id': post.id,
+          'payload': jsonEncode(post.toJson()),
+          'cached_at': DateTime.now().toIso8601String(),
+        }, conflictAlgorithm: ConflictAlgorithm.replace);
       }
     }
 
