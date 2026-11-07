@@ -21,10 +21,7 @@ final dirtyCountProvider = FutureProvider<int>((ref) {
 class NotesPage extends ConsumerWidget {
   const NotesPage({super.key});
 
-  Future<void> _addNote(
-    BuildContext context,
-    WidgetRef ref,
-  ) async {
+  Future<void> _addNote(BuildContext context, WidgetRef ref) async {
     final titleController = TextEditingController();
     final bodyController = TextEditingController();
 
@@ -38,15 +35,11 @@ class NotesPage extends ConsumerWidget {
             children: [
               TextField(
                 controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Judul',
-                ),
+                decoration: const InputDecoration(labelText: 'Judul'),
               ),
               TextField(
                 controller: bodyController,
-                decoration: const InputDecoration(
-                  labelText: 'Isi catatan',
-                ),
+                decoration: const InputDecoration(labelText: 'Isi catatan'),
               ),
             ],
           ),
@@ -61,20 +54,22 @@ class NotesPage extends ConsumerWidget {
               onPressed: () async {
                 if (titleController.text.trim().isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Judul tidak boleh kosong'),
-                    ),
+                    const SnackBar(content: Text('Judul tidak boleh kosong')),
                   );
                   return;
                 }
 
-                await ref.read(noteRepositoryProvider).addNote(
+                await ref
+                    .read(noteRepositoryProvider)
+                    .addNote(
                       title: titleController.text.trim(),
                       body: bodyController.text.trim(),
                     );
 
                 // Tutup dialog terlebih dahulu
                 if (dialogContext.mounted) {
+                  // Hapus pesan validasi yang masih tampil/menunggu.
+                  ScaffoldMessenger.of(dialogContext).clearSnackBars();
                   Navigator.pop(dialogContext);
                 }
 
@@ -101,9 +96,7 @@ class NotesPage extends ConsumerWidget {
         actions: [
           Center(
             child: dirtyCount.when(
-              data: (count) => Text(
-                'Belum sync: $count',
-              ),
+              data: (count) => Text('Belum sync: $count'),
               loading: () => const Text('...'),
               error: (_, _) => const Text('Error'),
             ),
@@ -125,19 +118,14 @@ class NotesPage extends ConsumerWidget {
       ),
 
       body: notes.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
 
-        error: (error, stackTrace) => Center(
-          child: Text('Terjadi error: $error'),
-        ),
+        error: (error, stackTrace) =>
+            Center(child: Text('Terjadi error: $error')),
 
         data: (items) {
           if (items.isEmpty) {
-            return const Center(
-              child: Text('Belum ada catatan'),
-            );
+            return const Center(child: Text('Belum ada catatan'));
           }
 
           return ListView.builder(
@@ -150,9 +138,7 @@ class NotesPage extends ConsumerWidget {
                 onDelete: () async {
                   if (note.id == null) return;
 
-                  await ref
-                      .read(noteRepositoryProvider)
-                      .deleteNote(note.id!);
+                  await ref.read(noteRepositoryProvider).deleteNote(note.id!);
 
                   ref.invalidate(notesProvider);
                   ref.invalidate(dirtyCountProvider);
