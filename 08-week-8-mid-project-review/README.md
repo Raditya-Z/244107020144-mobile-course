@@ -12,7 +12,7 @@ Dokumen ini merangkum review tengah semester untuk aplikasi Flutter yang dikemba
 - **Format:** setelah `flutter clean` dan `flutter pub get`, `dart format --set-exit-if-changed .` lulus dan melaporkan 16 file, 0 perubahan.
 - **CI GitHub Actions:** workflow disiapkan di `.github/workflows/ci.yml`; status run pada GitHub perlu diperiksa setelah workflow di-push.
 - **PR #1:** merged ke `develop` (merge commit lokal `06ec524`).
-- **Follow-up:** branch lokal `codex/week8-ai-verification` berisi pembersihan SnackBar setelah simpan sukses, widget test, CI, dan dokumentasi week 8. PR follow-up belum dibuat.
+- **Follow-up:** branch lokal `feature/week8-ai-verification` berisi pembersihan SnackBar setelah simpan sukses, widget test, CI, dan dokumentasi week 8. PR follow-up belum dibuat.
 
 ## Struktur project dan cara menjalankan
 
@@ -51,7 +51,7 @@ Struktur feature-first dan hasil verifikasi Minggu 7 dijelaskan lebih lengkap pa
 | Item | Status | Catatan |
 |---|---|---|
 | PR validasi catatan #1 | Merged | Source `feat/notes-validation`, target `develop`. |
-| PR follow-up | Belum dibuat | Branch `codex/week8-ai-verification`; berisi perbaikan SnackBar, widget test, CI, dan dokumen verifikasi. |
+| PR follow-up | Belum dibuat | Branch `feature/week8-ai-verification`; berisi perbaikan SnackBar, widget test, CI, dan dokumen verifikasi. |
 | Issue terkait | Belum dicatat | Isi nomor dan tautan hanya jika issue benar-benar dibuat. |
 | Komentar review | Perlu ditindaklanjuti | Reviewer meminta test untuk judul kosong; catat hasil setelah diperbaiki dan direview ulang. |
 | Merge | Belum dikonfirmasi | Isi setelah PR disetujui dan merge ke `develop`. |
