@@ -108,6 +108,12 @@ Catat tindak lanjut dan keputusan reviewer setelah proses review benar-benar dil
 
 Author memperbaiki temuan, meminta review ulang, lalu merge setelah disetujui. Gunakan squash bila commit perantara berantakan. Pastikan issue tertutup otomatis dan branch dihapus setelah merge.
 
+### Status pengerjaan aktual
+
+- PR #1 tercatat sudah di-merge ke `develop` pada remote-tracking history lokal.
+- Tidak ada peer review sejawat untuk follow-up karena author memilih tidak menggunakan reviewer. Review AI dan verifikasi manual bukan pengganti peer review pada modul.
+- Karena tidak ada reviewer, keputusan `Approve`/`Request changes` dan tindak lanjut komentar reviewer untuk follow-up belum dilakukan. Jangan tandai kriteria peer review sebagai selesai.
+
 ---
 
 # Praktikum 3 - Static Analysis dan Mid Review
@@ -127,12 +133,12 @@ flutter test
 | Pemeriksaan | Status | Bukti/catatan |
 |---|---|---|
 | `flutter analyze` | Lulus | Terminal menampilkan `No issues found!`. |
-| Format semua project dengan `dart format --set-exit-if-changed .` | Lulus | Setelah `flutter clean` dan `flutter pub get`, perintah melaporkan 16 file dan 0 perubahan. |
-| `flutter test` | Lulus | Seluruh 6 test lulus, termasuk dua widget test validasi dan pembersihan SnackBar. |
+| Format semua project dengan `dart format --set-exit-if-changed .` | Lulus | Pemeriksaan terakhir melaporkan 16 file dan 0 perubahan. |
+| `flutter test` | Lulus | Pemeriksaan terakhir: seluruh 6 test lulus, termasuk dua widget test validasi dan pembersihan SnackBar. |
 
 Tindak lanjut AI verification: ditambahkan `test/notes_page_validation_test.dart` untuk kasus whitespace yang ditolak dan alur error-lalu-sukses. Perbaikan membersihkan SnackBar setelah save sukses. Hasil terkini: 6 test lulus, analyze bersih, dan formatter dengan target `.` menunjukkan 0 perubahan.
 
-Ulangi pemeriksaan format setelah membersihkan hasil build. Jangan tandai format hijau sampai perintah pemeriksaan selesai tanpa perubahan atau error. Setelah format, ulangi analyze dan test.
+Pemeriksaan terakhir setelah pembersihan build melaporkan format 16 file tanpa perubahan. Jika kode Dart berubah lagi, ulangi format, analyze, dan test sebelum PR diminta untuk direview.
 
 ## 2. Aktifkan penolakan otomatis (CI)
 
@@ -142,7 +148,7 @@ Workflow CI berada di `.github/workflows/ci.yml`. Karena repository berisi beber
 05-week-5-local-storage-offline-first/week5_offline_notes
 ```
 
-Workflow menjalankan `flutter analyze` dan `flutter test` saat pull request. Status GitHub Actions harus diperiksa setelah workflow di-commit dan di-push; keberhasilan belum dikonfirmasi dalam catatan ini.
+Workflow menjalankan `dart format --set-exit-if-changed .`, `flutter analyze`, dan `flutter test` saat pull request. Tangkapan layar GitHub yang diberikan menunjukkan workflow `ci #1` berhasil pada PR #2 dari branch `feature/week8-ai-verification`. Dengan demikian, pemeriksaan CI tersebut berstatus lulus.
 
 ## 3. Nilai kesiapan tengah semester
 
@@ -157,5 +163,12 @@ Lengkapi dan verifikasi hal-hal berikut sebelum menyatakan mid review selesai:
 ## Definisi selesai dari modul
 
 Mid review selesai bila aplikasi berjalan identik dengan akhir Minggu 7, tiga pemeriksaan mesin hijau, minimal satu PR kecil per pasangan sudah di-merge melalui review, dan README memuat status paruh semester serta peta issue/PR. Yang dinilai adalah fondasi yang dapat dipercaya untuk paruh kedua, bukan banyaknya fitur.
+
+## Checklist verifikasi mandiri - status aktual
+
+- [x] Format, analyze, dan test lokal lulus.
+- [x] Tabel usulan AI vs keputusan final dan bukti manual tersimpan di `docs/ai-review-vs-keputusan.md`.
+- [ ] Follow-up PR kecil satu fitur dan issue tertutup otomatis: PR #2 `fix(notes): clear validation snackbar after save` sudah merged dan CI lulus (1/1). Issue #3 `Validasi judul kosong pada catatan` sudah ditutup sebagai completed secara manual setelah PR #1 dan #2 di-merge; issue tidak ditutup otomatis melalui keyword PR. Branch memuat beberapa kelompok perubahan.
+- [ ] Minimal 3 komentar peer review bermakna ditindaklanjuti hingga `Approve`: tidak dilakukan karena author memilih tanpa reviewer.
 
 ---
