@@ -5,11 +5,7 @@ import 'pages/settings_page.dart';
 import 'router.dart';
 
 void main() {
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends ConsumerWidget {
@@ -33,9 +29,7 @@ class MyApp extends ConsumerWidget {
         brightness: Brightness.dark,
       ),
 
-      themeMode: darkMode.value == true
-          ? ThemeMode.dark
-          : ThemeMode.light,
+      themeMode: darkMode.value == true ? ThemeMode.dark : ThemeMode.light,
 
       routerConfig: router,
     );

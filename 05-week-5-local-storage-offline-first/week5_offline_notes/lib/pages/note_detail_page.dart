@@ -4,16 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/local/note.dart';
 import 'notes_page.dart';
 
-final noteDetailProvider =
-    FutureProvider.family<Note?, int>((ref, id) {
+final noteDetailProvider = FutureProvider.family<Note?, int>((ref, id) {
   return ref.watch(noteRepositoryProvider).fetchNoteById(id);
 });
 
 class NoteDetailPage extends ConsumerWidget {
-  const NoteDetailPage({
-    super.key,
-    required this.noteId,
-  });
+  const NoteDetailPage({super.key, required this.noteId});
 
   final int noteId;
 
@@ -22,25 +18,17 @@ class NoteDetailPage extends ConsumerWidget {
     final note = ref.watch(noteDetailProvider(noteId));
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Detail Note'),
-      ),
+      appBar: AppBar(title: const Text('Detail Note')),
       body: note.when(
         loading: () {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
+          return const Center(child: CircularProgressIndicator());
         },
         error: (error, stackTrace) {
-          return Center(
-            child: Text('Terjadi error: $error'),
-          );
+          return Center(child: Text('Terjadi error: $error'));
         },
         data: (note) {
           if (note == null) {
-            return const Center(
-              child: Text('Note tidak ditemukan'),
-            );
+            return const Center(child: Text('Note tidak ditemukan'));
           }
 
           return Padding(
@@ -55,9 +43,7 @@ class NoteDetailPage extends ConsumerWidget {
                 const SizedBox(height: 16),
                 Text(note.body),
                 const SizedBox(height: 16),
-                Text(
-                  'Updated: ${note.updatedAt}',
-                ),
+                Text('Updated: ${note.updatedAt}'),
                 const SizedBox(height: 8),
                 Text(
                   note.dirty
