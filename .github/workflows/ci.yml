@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 05-week-5-local-storage-offline-first/week5_offline_notes
+        working-directory: 09-week-9-ai-assisted-development/campus_notify
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
