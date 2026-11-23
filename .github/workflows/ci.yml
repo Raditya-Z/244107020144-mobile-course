@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 10-week-10-ai-feature-integration
+        working-directory: 11-week-11-performance-optimization
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
