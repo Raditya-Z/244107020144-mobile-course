@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: 09-week-9-ai-assisted-development/campus_notify
+        working-directory: 10-week-10-ai-feature-integration
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
