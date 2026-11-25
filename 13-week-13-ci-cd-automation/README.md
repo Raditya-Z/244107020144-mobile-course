@@ -133,16 +133,33 @@ Runner juga memberi peringatan bahwa dukungan Gradle 9.3.1 akan dihentikan (mini
 
 ## Bukti di GitHub Actions
 
-Workflow berjalan otomatis pada push/pull request ke `main` atau `develop` setelah
-workflow ini di-merge, atau lewat **Run workflow** (`workflow_dispatch`). Untuk
-setiap run, catat:
+Workflow berjalan otomatis pada `push`/`pull_request` ke `main` atau `develop`, atau
+lewat **Run workflow** (`workflow_dispatch`).
 
-- nomor run dan commit SHA yang memicunya (halaman run menampilkan keduanya);
-- status tiap step (format, analyze, test, build APK, build AAB, upload artefak);
-- nama artefak `android-builds` beserta ukuran APK/AAB yang diunduh.
+| Item | Nilai |
+| --- | --- |
+| Workflow / run | `Flutter CI` #2 — [run 45649241826](https://github.com/Raditya-Z/244107020144-mobile-course/actions/runs/45649241826) |
+| Pemicu | `pull_request` #14 (`feat/week13-ci-cd-automation`) |
+| Commit | `985e0ba` — `fix(week13): bump AGP to 9.1.1 for runner Flutter toolchain` |
+| Tanggal / durasi | 25 November 2026 — 5m 42s |
+| Status | Success, seluruh step hijau |
+| Artefak | `android-builds` — 75,4 MB, kedaluwarsa 2 Desember 2026 |
 
-Tangkapan layar halaman run dan daftar artefak disimpan di folder ini setelah run
-pertama tersedia.
+Step yang berjalan: `pub get`, `dart format --set-exit-if-changed`, `flutter analyze
+--fatal-infos`, `flutter test --coverage`, `flutter build apk --release`, `flutter
+build appbundle --release`, dan `upload-artifact` — semuanya sukses. Satu annotation
+hanya berupa peringatan bahwa `actions/checkout@v4` masih menargetkan Node.js 20 dan
+dipaksa berjalan di Node.js 24; bukan kegagalan.
+
+Artefak berisi APK dan AAB hasil build di runner. Build lokal dengan konfigurasi yang
+sama menghasilkan `app-release.apk` 52,3 MB dan `app-release.aab` 51,5 MB; unduhan
+artefak GitHub memerlukan login. Bukti tangkapan layar:
+
+- `screenshots/ci-run-summary.png` — ringkasan run, durasi, dan daftar artefak;
+- `screenshots/ci-steps.png` — daftar step yang semuanya sukses.
+
+Run pertama (#1, commit `0f9bf53`) gagal karena AGP 9.1.0 di bawah batas minimum
+runner; rinciannya ada di "Catatan perbaikan pipeline".
 
 ## Risiko keamanan yang masih perlu ditangani
 
