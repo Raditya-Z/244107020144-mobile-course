@@ -115,6 +115,22 @@ Dijalankan pada Flutter 3.47.6 / Dart 3.13.5, Windows.
 | `flutter build appbundle --release` | BUILD SUCCESSFUL — `app-release.aab` (51,5 MB) |
 | `flutter build apk --release` tanpa `google-services.json` | BUILD SUCCESSFUL — plugin Firebase dilewati (simulasi kondisi CI) |
 
+## Catatan perbaikan pipeline
+
+Run pertama `Flutter CI` pada PR #14 gagal di `flutter build apk --release` sebelum
+kompilasi selesai:
+
+```text
+Error: Your project's Android Gradle Plugin version (Android Gradle Plugin version 9.1.0)
+is lower than Flutter's minimum supported version of Android Gradle Plugin version 9.1.1.
+```
+
+Flutter `stable` di runner lebih baru daripada Flutter lokal (3.47.6) dan menaikkan
+batas minimal AGP. Perbaikan: AGP dinaikkan ke `9.1.1` di
+`android/settings.gradle.kts`, lalu build APK dan AAB diverifikasi ulang di lokal.
+Runner juga memberi peringatan bahwa dukungan Gradle 9.3.1 akan dihentikan (minimal
+9.5.0); saat ini hanya peringatan dan dicatat sebagai risiko.
+
 ## Bukti di GitHub Actions
 
 Workflow berjalan otomatis pada push/pull request ke `main` atau `develop` setelah
@@ -153,6 +169,10 @@ pertama tersedia.
 7. **Action belum dipin ke commit SHA.** `actions/checkout@v4`,
    `actions/upload-artifact@v4`, dan `subosito/flutter-action@v2` memakai tag major;
    untuk rantai pasok yang lebih ketat, pin ke SHA tertentu.
+8. **Toolchain CI mengikuti `stable` dan terus bergerak.** Versi Flutter di runner
+   bisa lebih baru daripada lokal, sehingga batas minimal AGP/Gradle dapat berubah
+   tanpa ada perubahan di repository (seperti kegagalan run pertama). Opsi yang belum
+   diambil: pin `flutter-version` pada workflow atau rutin memperbarui AGP/Gradle.
 
 ## Refleksi
 
